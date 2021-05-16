@@ -14,4 +14,17 @@ mysql_connect.connect(
     }
 );
 
+const query = function (sql, values) {
+    return new Promise(
+        (resolve, reject) => {
+            mysql_connect.query(sql, values, (erro, rows) => {
+                if (erro) reject(erro);
+                else resolve(rows);
+            })
+        }
+    );
+}
+
+mysql_connect._query = query;
+
 module.exports = mysql_connect;
