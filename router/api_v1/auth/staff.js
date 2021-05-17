@@ -24,6 +24,17 @@ Router.get('/', [], async (req, res) => {
     }
 });
 
+Router.get('/me', [accept(5)], async (req, res) => {
+    try {
+        const [staff] = await req.mysql._query(`SELECT * FROM auth.staff_introd WHERE uuid='${req.auth.uuid}';`);
+        staff.mailHash = crypto.createHash('md5').update(staff.email).digest("hex");
+        res.send(staff);
+    } catch (erro) {
+        console.error(erro);
+        res.status(500).send('Internal Server Error');
+    }
+})
+
 Router.get('/:id', [], async (req, res) => {
     try {
         const { id } = req.params;
@@ -152,5 +163,35 @@ Router.patch(
         }
     }
 );
+
+Router.put(
+    '/',
+    [
+        accept(5),
+        body('description').exists(),
+        body('skill').exists(),
+        body('name').exists(),
+        body('email').exists(),
+        body('tags').exists()
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    msg: 'Bad Request',
+                    errors: errors.array()
+                });
+            }
+            const { name, skill, email, description, tags } = req.body;
+            const data = [name, skill, email, description, tags];
+            await req.mysql._query(`UPDATE auth.staff SET name=?,skill=?,email=?,description=?,tags=? WHERE uuid='${req.auth.uuid}';`, data);
+            res.send('OK');
+        } catch (erro) {
+            console.log(erro);
+            res.status(500).send('Internal Server Error');
+        }
+    }
+)
 
 module.exports = Router;
