@@ -12,6 +12,7 @@ module.exports = async function (req, res, next) {
         if (user) {
             req.auth = {
                 type: 'user',
+                authority: 5,
                 uuid: decoded.uuid
             };
             return next();
