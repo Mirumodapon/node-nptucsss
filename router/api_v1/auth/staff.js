@@ -12,8 +12,7 @@ const accept = require('../../middleware/acceptAuth');
 
 Router.get('/', [], async (req, res) => {
     try {
-        const sql = 'SELECT uuid,name,email from auth.staff;'
-        const staffList = await req.mysql._query(sql);
+        const staffList = await req.mysql._query('SELECT uuid,name,email from auth.staff;');
         staffList.forEach(staff => {
             staff.mailHash = crypto.createHash('md5').update(staff.email).digest("hex");
             delete staff.email;
@@ -29,8 +28,7 @@ Router.get('/:id', [], async (req, res) => {
     try {
         const { id } = req.params;
         if (!uuid.validate(id)) return res.status(400).send('Bad Request');
-        const sql = `SELECT * FROM auth.staff_introd WHERE uuid='${id}';`;
-        const [staff] = await req.mysql._query(sql);
+        const [staff] = await req.mysql._query(`SELECT * FROM auth.staff_introd WHERE uuid='${id}';`);
         staff.mailHash = crypto.createHash('md5').update(staff.email).digest("hex");
         res.send(staff);
     } catch (erro) {
@@ -43,8 +41,7 @@ Router.post('/register', [accept(1)], async (req, res) => {
     try {
         const { id } = req.body;
         if (!uuid.validate(id)) return res.status(400).send('Bad Request');
-        const sql = `SELECT * from auth.user WHERE uuid='${id}';`
-        const [user] = await req.mysql._query(sql);
+        const [user] = await req.mysql._query(`SELECT * from auth.user WHERE uuid='${id}';`);
         if (!user) {
             return res.status(404).json('User Not Found');
         }
@@ -73,8 +70,7 @@ Router.post(
                 });
             }
             const { email, password } = req.body;
-            const sql = `SELECT * FROM auth.staff WHERE email='${email}';`
-            const [staff] = await req.mysql._query(sql);
+            const [staff] = await req.mysql._query(`SELECT * FROM auth.staff WHERE email='${email}';`);
             if (!staff) {
                 return res.status(400).json({
                     msg: 'Login failed'

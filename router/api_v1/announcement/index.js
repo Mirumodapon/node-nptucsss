@@ -9,8 +9,9 @@ const uuid = require('uuid');
 
 Router.get('/', [], async (req, res) => {
     try {
-        const sql = `SELECT * FROM announcement.announcement WHERE expire < '${new Date().toISOString()}';`;
-        const anno = await req.mysql._query(sql);
+        const anno = await req.mysql._query(
+            `SELECT * FROM announcement.announcement WHERE expire < '${new Date().toISOString()}';`
+        );
         res.send(anno);
     } catch (erro) {
         console.log(erro);
@@ -63,9 +64,8 @@ Router.post(
                 });
             }
             const { title, content, type, expire } = req.body;
-            const sql = 'INSERT INTO announcement.announcement VALUES (?);';
             const data = [uuid.v4(), title, content, new Date, new Date, type, new Date(expire)];
-            await req.mysql._query(sql, [data]);
+            await req.mysql._query('INSERT INTO announcement.announcement VALUES (?);', [data]);
             res.send('OK');
         } catch (erro) {
             console.log(erro);
@@ -80,8 +80,7 @@ Router.delete('/:id', [accept(2)], async (req, res) => {
         if (!uuid.validate(id)) return res.status(400).send('Bad Request');
         const [ann] = await req.mysql._query(`SELECT uuid FROM announcement.announcement WHERE uuid='${id}'`);
         if (!ann) return res.status(404).send('Not Found');
-        const sql = `DELETE FROM announcement.announcement WHERE uuid='${id}';`;
-        await req.mysql._query(sql);
+        await req.mysql._query(`DELETE FROM announcement.announcement WHERE uuid='${id}';`);
         res.send('OK');
     } catch (erro) {
         console.log(erro);

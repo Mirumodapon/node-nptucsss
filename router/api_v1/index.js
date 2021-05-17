@@ -11,7 +11,7 @@ const Router = express.Router();
 Router.use(require('../middleware/parseAuth'));
 
 Router.use('/auth', require('./auth'));
-Router.use('/announcement', require('./aouncement'));
+Router.use('/announcement', require('./announcement'));
 
 
 

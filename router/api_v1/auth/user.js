@@ -11,8 +11,9 @@ const accept = require('../../middleware/acceptAuth');
 
 Router.get('/', [accept(2)], async (req, res) => {
     try {
-        const sql = 'SELECT uuid,name from auth.user;'
-        const staffList = await req.mysql._query(sql);
+        const staffList = await req.mysql._query(
+            'SELECT uuid,name from auth.user;'
+        );
         res.send(staffList);
     } catch (erro) {
         console.error(erro);
@@ -24,8 +25,9 @@ Router.get('/:id', [accept(2)], async (req, res) => {
     try {
         const { id } = req.params;
         if (!uuid.validate(id)) return res.status(400).send('Bad Request');
-        const sql = `SELECT * FROM auth.user_info WHERE uuid='${id}';`;
-        const [staff] = await req.mysql._query(sql);
+        const [staff] = await req.mysql._query(
+            `SELECT * FROM auth.user_info WHERE uuid='${id}';`
+        );
         res.send(staff);
     } catch (erro) {
         console.error(erro);
@@ -38,7 +40,10 @@ Router.post(
     [
         body('email', 'The email is not valid.').isEmail(),
         body('name', 'Name is require.').exists(),
-        body('password', 'Request password at least 8 characters').isLength({
+        body(
+            'password',
+            'Request password at least 8 characters'
+        ).isLength({
             min: 8
         })
     ],
@@ -52,8 +57,12 @@ Router.post(
                 });
             }
             const { name, email } = req.body;
-            const [user] = await req.mysql._query(`SELECT email FROM auth.user WHERE email='${email}';`);
-            if (user) return res.status(406).json({ msg: 'The email has been register' });
+            const [user] = await req.mysql._query(
+                `SELECT email FROM auth.user WHERE email='${email}';`
+            );
+            if (user) return res.status(406).json({
+                msg: 'The email has been register'
+            });
             const id = uuid.v1();
             const salt = await bcrypt.genSalt(10);
             const password = await bcrypt.hash(req.body.password, salt);
@@ -82,8 +91,9 @@ Router.post(
                 });
             }
             const { email, password } = req.body;
-            const sql = `SELECT * FROM auth.user WHERE email='${email}';`
-            const [user] = await req.mysql._query(sql);
+            const [user] = await req.mysql._query(
+                `SELECT * FROM auth.user WHERE email='${email}';`
+            );
             if (!user) {
                 return res.status(400).json({
                     msg: 'Login failed'
