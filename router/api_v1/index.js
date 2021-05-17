@@ -8,7 +8,10 @@ const Router = express.Router();
 //     res.json(data);
 // });
 
+Router.use(require('../middleware/parseAuth'));
+
 Router.use('/auth', require('./auth'));
+Router.use('/announcement', require('./aouncement'));
 
 
 
