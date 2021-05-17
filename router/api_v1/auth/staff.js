@@ -5,6 +5,9 @@ const Router = express.Router();
 
 const crypto = require('crypto');
 const uuid = require('uuid');
+const { body, validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 Router.get('/', [], async (req, res) => {
     try {
@@ -53,5 +56,53 @@ Router.post('/register', [], async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+Router.post(
+    '/login',
+    [
+        body('email').isEmail(),
+        body('password').exists()
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    msg: 'Login failed'
+                });
+            }
+            const { email, password } = req.body;
+            const sql = `SELECT * FROM auth.staff WHERE email='${email}';`
+            const [staff] = await req.mysql._query(sql);
+            const isMatch = await bcrypt.compare(password, staff.password);
+            if (!isMatch) {
+                return res.status(400).json({
+                    msg: 'Login failed'
+                });
+            }
+            await req.mysql._query(`UPDATE auth.staff SET last_login=? WHERE uuid='${staff.uuid}';`, [new Date]);
+            const token_payload = {
+                uuid: staff.uuid
+            }
+            jwt.sign(
+                token_payload,
+                process.env.jwt_secret,
+                { expiresIn: 0 },
+                (erro, token) => {
+                    if (erro) throw erro;
+                    res.json({
+                        msg: 'Login successed',
+                        uuid: staff.uuid,
+                        type: 'staff',
+                        token
+                    });
+                }
+            );
+        } catch (erro) {
+            console.error(erro);
+            res.status(500).send('Internal Server Error');
+        }
+    }
+);
 
 module.exports = Router;
