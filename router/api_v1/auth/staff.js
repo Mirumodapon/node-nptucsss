@@ -45,7 +45,7 @@ Router.post('/register', [accept(1)], async (req, res) => {
         if (!user) {
             return res.status(404).json('User Not Found');
         }
-        const value = [id, user.name, user.email, '', '', user.join, user.last_login, user.password, 4];
+        const value = [id, user.name, user.email, '', '', '', user.join, user.last_login, user.password, 4];
         await req.mysql._query('INSERT INTO auth.staff VALUES (?); ', [value]);
         await req.mysql._query(`DELETE FROM auth.user WHERE uuid='${id}'`);
         res.send('OK');
@@ -123,6 +123,34 @@ Router.delete(
             res.status(500).send('Internal Server Error');
         }
     }
-)
+);
+
+Router.patch(
+    '/:id',
+    [
+        accept(1),
+        body('authority')
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    msg: 'Bad Request',
+                    errors: errors.array()
+                });
+            }
+            const { id } = req.params;
+            if (!uuid.validate(id)) return res.status(400).send('Bad Request');
+            const [staff] = await req.mysql._query(`SELECT uuid FROM auth.staff WHERE uuid='${id}'`);
+            if (!staff) return res.status(404).send('Not Found');
+            await req.mysql._query(`UPDATE auth.staff SET authority=? WHERE uuid='${id}';`, [req.body.authority]);
+            res.send('OK');
+        } catch (erro) {
+            console.log(erro);
+            res.status(500).send('Internal Server Error');
+        }
+    }
+);
 
 module.exports = Router;
