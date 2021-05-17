@@ -24,7 +24,7 @@ Router.get('/', [], async (req, res) => {
     }
 });
 
-Router.get('/me', [accept(5)], async (req, res) => {
+Router.get('/me', [accept(4)], async (req, res) => {
     try {
         const [staff] = await req.mysql._query(`SELECT * FROM auth.staff_introd WHERE uuid='${req.auth.uuid}';`);
         staff.mailHash = crypto.createHash('md5').update(staff.email).digest("hex");
@@ -137,6 +137,24 @@ Router.delete(
 );
 
 Router.patch(
+    '/password',
+    [accept(4), body('password').isLength({ min: 8 })],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                msg: 'Bad Request',
+                errors: errors.array()
+            });
+        }
+        const salt = await bcrypt.genSalt(10);
+        const password = await bcrypt.hash(req.body.password, salt);
+        await req.mysql._query(`UPDATE auth.staff SET password=? WHERE uuid='${req.auth.uuid}';`, [password]);
+        res.send('OK');
+    }
+);
+
+Router.patch(
     '/:id',
     [
         accept(1),
@@ -167,7 +185,7 @@ Router.patch(
 Router.put(
     '/',
     [
-        accept(5),
+        accept(4),
         body('description').exists(),
         body('skill').exists(),
         body('name').exists(),
@@ -192,6 +210,6 @@ Router.put(
             res.status(500).send('Internal Server Error');
         }
     }
-)
+);
 
 module.exports = Router;
