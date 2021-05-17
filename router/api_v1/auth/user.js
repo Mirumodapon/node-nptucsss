@@ -130,4 +130,22 @@ Router.post(
     }
 );
 
+Router.delete(
+    '/:id',
+    [accept(1)],
+    async (req, res) => {
+        try {
+            const { id } = req.params;
+            if (!uuid.validate(id)) return res.status(400).send('Bad Request');
+            const [user] = await req.mysql._query(`SELECT uuid FROM auth.user WHERE uuid='${id}'`);
+            if (!user) return res.status(404).send('Not Found');
+            await req.mysql._query(`DELETE FROM auth.user WHERE uuid='${id}';`);
+            res.send('OK');
+        } catch (erro) {
+            console.log(erro);
+            res.status(500).send('Internal Server Error');
+        }
+    }
+)
+
 module.exports = Router;
