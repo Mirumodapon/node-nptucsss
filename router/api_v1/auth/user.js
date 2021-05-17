@@ -21,14 +21,25 @@ Router.get('/', [accept(2)], async (req, res) => {
     }
 });
 
+Router.get('/me', [accept(5)], async (req, res) => {
+    try {
+        const [user] = await req.mysql._query(`SELECT * FROM auth.user_info WHERE uuid='${req.auth.uuid}';`);
+        if (!user) res.status(404).send('Not Found');
+        res.send(user);
+    } catch (erro) {
+        console.error(erro);
+        res.status(500).send('Internal Server Error');
+    }
+})
+
 Router.get('/:id', [accept(2)], async (req, res) => {
     try {
         const { id } = req.params;
         if (!uuid.validate(id)) return res.status(400).send('Bad Request');
-        const [staff] = await req.mysql._query(
+        const [user] = await req.mysql._query(
             `SELECT * FROM auth.user_info WHERE uuid='${id}';`
         );
-        res.send(staff);
+        res.send(user);
     } catch (erro) {
         console.error(erro);
         res.status(500).send('Internal Server Error');
@@ -112,7 +123,6 @@ Router.post(
             jwt.sign(
                 token_payload,
                 process.env.jwt_secret,
-                { expiresIn: 0 },
                 (erro, token) => {
                     if (erro) throw erro;
                     res.json({
@@ -147,5 +157,44 @@ Router.delete(
         }
     }
 )
+
+Router.patch(
+    '/password',
+    [accept(5), body('password').isLength({ min: 8 })],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                msg: 'Bad Request',
+                errors: errors.array()
+            });
+        }
+        const salt = await bcrypt.genSalt(10);
+        const password = await bcrypt.hash(req.body.password, salt);
+        await req.mysql._query(`UPDATE auth.user SET password=? WHERE uuid='${req.auth.uuid}';`, [password]);
+        res.send('OK');
+    }
+);
+
+Router.put(
+    '/',
+    [
+        accept(5),
+        body('email').isEmail(),
+        body('name').exists()
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                msg: 'Bad Request',
+                errors: errors.array()
+            });
+        }
+        const { name, email } = req.body;
+        await req.mysql._query(`UPDATE auth.user SET name=?,email=? WHERE uuid='${req.auth.uuid}';`, [name, email]);
+        res.send('OK');
+    }
+);
 
 module.exports = Router;
