@@ -7,8 +7,9 @@ const uuid = require('uuid');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const accept = require('../../middleware/acceptAuth');
 
-Router.get('/', [], async (req, res) => {
+Router.get('/', [accept(2)], async (req, res) => {
     try {
         const sql = 'SELECT uuid,name from auth.user;'
         const staffList = await req.mysql._query(sql);
@@ -19,7 +20,7 @@ Router.get('/', [], async (req, res) => {
     }
 });
 
-Router.get('/:id', [], async (req, res) => {
+Router.get('/:id', [accept(2)], async (req, res) => {
     try {
         const { id } = req.params;
         if (!uuid.validate(id)) return res.status(400).send('Bad Request');
@@ -83,6 +84,11 @@ Router.post(
             const { email, password } = req.body;
             const sql = `SELECT * FROM auth.user WHERE email='${email}';`
             const [user] = await req.mysql._query(sql);
+            if (!user) {
+                return res.status(400).json({
+                    msg: 'Login failed'
+                });
+            }
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
                 return res.status(400).json({
