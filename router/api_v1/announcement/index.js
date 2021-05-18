@@ -13,7 +13,7 @@ const checkParamsValid = require('../../middleware/checkParamsValid');
 Router.get('/', [], async (req, res) => {
     try {
         const anno = await req.mysql._query(
-            `SELECT * FROM announcement.announcement WHERE expire < '${new Date().toISOString()}';`
+            `SELECT * FROM announcement.announcement WHERE expire > '${new Date().toISOString()}';`
         );
         res.send(anno);
     } catch (erro) {
