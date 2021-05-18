@@ -91,7 +91,7 @@ Router.put(
         body('title').exists(),
         body('content').exists(),
         body('type').exists(),
-        body('expire'),
+        body('expire').exists(),
         checkParamsValid
     ],
     async (req, res) => {
