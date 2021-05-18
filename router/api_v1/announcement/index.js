@@ -3,9 +3,12 @@ const Router = express.Router();
 
 // ! base url /api/v1/announcement
 
-const { body, validationResult } = require('express-validator');
+const { body } = require('express-validator');
 const accept = require('../../middleware/acceptAuth');
 const uuid = require('uuid');
+const checkoutIdfromUrl = require('../../middleware/checkoutIdfromUrl');
+const checkParamsValid = require('../../middleware/checkParamsValid');
+
 
 Router.get('/', [], async (req, res) => {
     try {
@@ -30,10 +33,9 @@ Router.get('/all', [], async (req, res) => {
     }
 });
 
-Router.get('/:id', [], async (req, res) => {
+Router.get('/:id', [checkoutIdfromUrl], async (req, res) => {
     try {
         const { id } = req.params;
-        if (!uuid.validate(id)) return res.status(400).send('Bad Request');
         const [anno] = await req.mysql._query(`SELECT * FROM announcement.announcement WHERE uuid='${id}';`);
         if (!anno) return res.status(404).send('Not Found');
         const history = await req.mysql._query(`SELECT * FROM announcement.edit_history WHERE uuid='${id}';`);
@@ -52,17 +54,11 @@ Router.post(
         body('title').exists(),
         body('content').exists(),
         body('type').exists(),
-        body('expire').exists()
+        body('expire').exists(),
+        checkParamsValid
     ],
     async (req, res) => {
         try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({
-                    msg: 'Bad Request',
-                    errors: errors.array()
-                });
-            }
             const { title, content, type, expire } = req.body;
             const data = [uuid.v4(), title, content, new Date, new Date, type, new Date(expire)];
             await req.mysql._query('INSERT INTO announcement.announcement VALUES (?);', [data]);
@@ -74,10 +70,9 @@ Router.post(
     }
 );
 
-Router.delete('/:id', [accept(2)], async (req, res) => {
+Router.delete('/:id', [checkoutIdfromUrl, accept(2)], async (req, res) => {
     try {
         const { id } = req.params;
-        if (!uuid.validate(id)) return res.status(400).send('Bad Request');
         const [ann] = await req.mysql._query(`SELECT uuid FROM announcement.announcement WHERE uuid='${id}'`);
         if (!ann) return res.status(404).send('Not Found');
         await req.mysql._query(`DELETE FROM announcement.announcement WHERE uuid='${id}';`);
@@ -91,23 +86,17 @@ Router.delete('/:id', [accept(2)], async (req, res) => {
 Router.put(
     '/:id',
     [
+        checkoutIdfromUrl,
         accept(2),
         body('title').exists(),
         body('content').exists(),
         body('type').exists(),
-        body('expire')
+        body('expire'),
+        checkParamsValid
     ],
     async (req, res) => {
         try {
             const { id } = req.params;
-            if (!uuid.validate(id)) return res.status(400).send('Bad Request');
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({
-                    msg: 'Bad Request',
-                    errors: errors.array()
-                });
-            }
             const [ann] = await req.mysql._query(`SELECT uuid FROM announcement.announcement WHERE uuid='${id}'`);
             if (!ann) return res.status(404).send('Not Found');
             const { title, content, type, detail, expire } = req.body;
