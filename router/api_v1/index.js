@@ -13,6 +13,4 @@ Router.use(require('../middleware/parseAuth'));
 Router.use('/auth', require('./auth'));
 Router.use('/announcement', require('./announcement'));
 
-
-
 module.exports = Router;
