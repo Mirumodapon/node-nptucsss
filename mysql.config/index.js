@@ -8,7 +8,8 @@ const scripts = [
 	'./Init.sql',
 	'./staff.sql',
 	'./user.sql',
-	'./announcement.sql'
+	'./announcement.sql',
+	'./learn_materials.sql'
 ];
 
 const mysql_config = {
@@ -20,7 +21,7 @@ const mysql_config = {
 
 const mysql_connect = mysql.createConnection(mysql_config);
 
-mysql_connect._query = function (sql, values) {
+mysql_connect._query = function(sql, values) {
 	return new Promise((resolve, reject) => {
 		mysql_connect.query(sql, values, (erro, rows) => {
 			if (erro) reject(erro);
