@@ -1,9 +1,10 @@
 const mysql = require('mysql');
 const fs = require('fs');
+require('dotenv').config();
 
-const host = '';
-const user = '';
-const password = '';
+const host = process.env.host;
+const user = process.env.user;
+const password = process.env.pass;
 const scripts = [
 	'./Init.sql',
 	'./staff.sql',
