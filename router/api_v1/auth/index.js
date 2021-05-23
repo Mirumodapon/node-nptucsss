@@ -5,5 +5,6 @@ const Router = express.Router();
 
 Router.use('/staff', require('./staff'));
 Router.use('/user', require('./user'));
+Router.use('/login', require('./login'));
 
 module.exports = Router;

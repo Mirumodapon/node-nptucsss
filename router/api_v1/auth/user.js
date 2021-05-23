@@ -84,55 +84,6 @@ Router.post(
 	}
 );
 
-Router.post(
-	'/login',
-	[body('email').isEmail(), body('password').exists()],
-	async (req, res) => {
-		try {
-			const errors = validationResult(req);
-			if (!errors.isEmpty()) {
-				return res.status(400).json({
-					msg: 'Login failed'
-				});
-			}
-			const { email, password } = req.body;
-			const [user] = await req.mysql._query(
-				`SELECT * FROM auth.user WHERE email='${email}';`
-			);
-			if (!user) {
-				return res.status(400).json({
-					msg: 'Login failed'
-				});
-			}
-			const isMatch = await bcrypt.compare(password, user.password);
-			if (!isMatch) {
-				return res.status(400).json({
-					msg: 'Login failed'
-				});
-			}
-			await req.mysql._query(
-				`UPDATE auth.user SET last_login=? WHERE uuid='${user.uuid}';`,
-				[new Date()]
-			);
-			const token_payload = {
-				uuid: user.uuid
-			};
-			jwt.sign(token_payload, process.env.jwt_secret, (erro, token) => {
-				if (erro) throw erro;
-				res.json({
-					msg: 'Login successed',
-					uuid: user.uuid,
-					type: 'user',
-					token
-				});
-			});
-		} catch (erro) {
-			console.error(erro);
-			res.status(500).send('Internal Server Error');
-		}
-	}
-);
-
 Router.delete('/:id', [checkoutIdfromUrl, accept(1)], async (req, res) => {
 	try {
 		const { id } = req.params;

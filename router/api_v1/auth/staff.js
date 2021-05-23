@@ -95,60 +95,6 @@ Router.post('/register', [accept(1), checkoutIdfromBody], async (req, res) => {
 	}
 });
 
-Router.post(
-	'/login',
-	[body('email').isEmail(), body('password').exists()],
-	async (req, res) => {
-		try {
-			const errors = validationResult(req);
-			if (!errors.isEmpty()) {
-				return res.status(400).json({
-					msg: 'Login failed'
-				});
-			}
-			const { email, password } = req.body;
-			const [staff] = await req.mysql._query(
-				`SELECT * FROM auth.staff WHERE email='${email}';`
-			);
-			if (!staff) {
-				return res.status(400).json({
-					msg: 'Login failed'
-				});
-			}
-			const isMatch = await bcrypt.compare(password, staff.password);
-			if (!isMatch) {
-				return res.status(400).json({
-					msg: 'Login failed'
-				});
-			}
-			await req.mysql._query(
-				`UPDATE auth.staff SET last_login=? WHERE uuid='${staff.uuid}';`,
-				[new Date()]
-			);
-			const token_payload = {
-				uuid: staff.uuid
-			};
-			jwt.sign(
-				token_payload,
-				process.env.jwt_secret,
-				{},
-				(erro, token) => {
-					if (erro) throw erro;
-					res.json({
-						msg: 'Login successed',
-						uuid: staff.uuid,
-						type: 'staff',
-						token
-					});
-				}
-			);
-		} catch (erro) {
-			console.error(erro);
-			res.status(500).send('Internal Server Error');
-		}
-	}
-);
-
 Router.delete('/:id', [accept(1), checkoutIdfromUrl], async (req, res) => {
 	try {
 		const { id } = req.params;
