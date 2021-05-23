@@ -17,8 +17,8 @@ FROM auth.user;
 INSERT INTO user VALUES (
 	'3b891daa-e661-4cfc-80cc-5a05c55cce77',
     'Testing User',
-    'example@nptucsss.org',
+    'user@example.mail',
     ('2021-05-16 00:00:00'),
     ('2021-05-16 00:00:00'),
-    'password'
+    '$2a$10$5jQzkJt6qYzxyGYvbtARkeyW3ZAJqd1MDP5e8jlPJEl73y.uRYUoW' -- DPQXbUyAA4AoekzeNftp --
 );
