@@ -28,5 +28,5 @@ INSERT INTO staff VALUES (
     ('2021-05-16 00:00:00'),
     ('2021-05-16 00:00:00'),
     '$2a$10$ED8AvyybdSfifIqEYA.M3uAn2Cto.v5dwnDKBTZOakYMim5UEBfPi', -- 7r01tNsuKCO4hnlmpW8J --
-    0
+    255
 );

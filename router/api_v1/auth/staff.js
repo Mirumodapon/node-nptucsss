@@ -32,7 +32,7 @@ Router.get('/', [], async (req, res) => {
 	}
 });
 
-Router.get('/me', [accept(4)], async (req, res) => {
+Router.get('/me', [accept(1)], async (req, res) => {
 	try {
 		const [staff] = await req.mysql._query(
 			`SELECT * FROM auth.staff_introd WHERE uuid='${req.auth.uuid}';`
@@ -65,37 +65,48 @@ Router.get('/:id', [checkoutIdfromUrl], async (req, res) => {
 	}
 });
 
-Router.post('/register', [accept(1), checkoutIdfromBody], async (req, res) => {
-	try {
-		const { id } = req.body;
-		const [user] = await req.mysql._query(
-			`SELECT * from auth.user WHERE uuid='${id}';`
-		);
-		if (!user) {
-			return res.status(404).json('User Not Found');
+Router.post(
+	'/register',
+	[
+		accept(4),
+		body('authority').exists(),
+		checkParamsValid,
+		checkoutIdfromBody
+	],
+	async (req, res) => {
+		try {
+			const { id } = req.body;
+			const [user] = await req.mysql._query(
+				`SELECT * from auth.user WHERE uuid='${id}';`
+			);
+			if (!user) {
+				return res.status(404).json('User Not Found');
+			}
+			const value = [
+				id,
+				user.name,
+				user.email,
+				'',
+				'',
+				'',
+				user.join,
+				user.last_login,
+				user.password,
+				req.body.authority
+			];
+			await req.mysql._query('INSERT INTO auth.staff VALUES (?); ', [
+				value
+			]);
+			await req.mysql._query(`DELETE FROM auth.user WHERE uuid='${id}'`);
+			res.send('OK');
+		} catch (erro) {
+			console.error(erro);
+			res.status(500).send('Internal Server Error');
 		}
-		const value = [
-			id,
-			user.name,
-			user.email,
-			'',
-			'',
-			'',
-			user.join,
-			user.last_login,
-			user.password,
-			4
-		];
-		await req.mysql._query('INSERT INTO auth.staff VALUES (?); ', [value]);
-		await req.mysql._query(`DELETE FROM auth.user WHERE uuid='${id}'`);
-		res.send('OK');
-	} catch (erro) {
-		console.error(erro);
-		res.status(500).send('Internal Server Error');
 	}
-});
+);
 
-Router.delete('/:id', [accept(1), checkoutIdfromUrl], async (req, res) => {
+Router.delete('/:id', [accept(2), checkoutIdfromUrl], async (req, res) => {
 	try {
 		const { id } = req.params;
 		const [staff] = await req.mysql._query(
@@ -112,7 +123,7 @@ Router.delete('/:id', [accept(1), checkoutIdfromUrl], async (req, res) => {
 
 Router.patch(
 	'/password',
-	[accept(4), body('password').isLength({ min: 8 }), checkParamsValid],
+	[accept(1), body('password').isLength({ min: 8 }), checkParamsValid],
 	async (req, res) => {
 		const salt = await bcrypt.genSalt(10);
 		const password = await bcrypt.hash(req.body.password, salt);
@@ -128,7 +139,7 @@ Router.patch(
 	'/:id',
 	[
 		checkoutIdfromUrl,
-		accept(1),
+		accept(4),
 		body('authority').exists(),
 		checkParamsValid
 	],
@@ -154,7 +165,7 @@ Router.patch(
 Router.put(
 	'/',
 	[
-		accept(4),
+		accept(1),
 		body('description').exists(),
 		body('skill').exists(),
 		body('name').exists(),

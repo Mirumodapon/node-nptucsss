@@ -53,7 +53,7 @@ Router.get('/:id', [checkoutIdfromUrl], async (req, res) => {
 Router.post(
 	'/',
 	[
-		accept(2),
+		accept(4),
 		body('title').exists(),
 		body('content').exists(),
 		body('type').exists(),
@@ -84,7 +84,7 @@ Router.post(
 	}
 );
 
-Router.delete('/:id', [checkoutIdfromUrl, accept(2)], async (req, res) => {
+Router.delete('/:id', [checkoutIdfromUrl, accept(4)], async (req, res) => {
 	try {
 		const { id } = req.params;
 		const [ann] = await req.mysql._query(
@@ -105,7 +105,7 @@ Router.put(
 	'/:id',
 	[
 		checkoutIdfromUrl,
-		accept(2),
+		accept(4),
 		body('title').exists(),
 		body('content').exists(),
 		body('type').exists(),
@@ -136,7 +136,7 @@ Router.put(
 	}
 );
 
-Router.patch('/:id', [accept(2)], async (req, res) => {
+Router.patch('/:id', [accept(4)], async (req, res) => {
 	res.status(405);
 });
 

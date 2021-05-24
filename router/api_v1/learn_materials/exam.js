@@ -31,7 +31,7 @@ Router.get('/subject/:department_subject', [], async (req, res) => {
 Router.post(
 	'/',
 	[
-		accept(3),
+		accept(8),
 		body('department').exists(),
 		body('semester').exists(),
 		body('subject').exists(),
@@ -54,7 +54,7 @@ Router.post(
 	}
 );
 
-Router.delete('/:id', [accept(3), checkoutIdfromUrl], async (req, res) => {
+Router.delete('/:id', [accept(8), checkoutIdfromUrl], async (req, res) => {
 	try {
 		const { id } = req.params;
 		const [exam] = await req.mysql._query(
@@ -74,7 +74,7 @@ Router.delete('/:id', [accept(3), checkoutIdfromUrl], async (req, res) => {
 Router.put(
 	'/:id',
 	[
-		accept(3),
+		accept(8),
 		checkoutIdfromUrl,
 		body('department').exists(),
 		body('semester').exists(),

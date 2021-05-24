@@ -8,7 +8,6 @@ const uuid = require('uuid');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const accept = require('../../middleware/acceptAuth');
 const checkoutIdfromUrl = require('../../middleware/checkoutIdfromUrl');
 const checkoutIdfromBody = require('../../middleware/checkoutIdfromBody');
 const checkParamsValid = require('../../middleware/checkParamsValid');

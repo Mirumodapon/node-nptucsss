@@ -11,7 +11,7 @@ const accept = require('../../middleware/acceptAuth');
 const checkoutIdfromUrl = require('../../middleware/checkoutIdfromUrl');
 const checkParamsValid = require('../../middleware/checkParamsValid');
 
-Router.get('/', [accept(2)], async (req, res) => {
+Router.get('/', [accept(4)], async (req, res) => {
 	try {
 		const staffList = await req.mysql._query(
 			'SELECT uuid,name from auth.user;'
@@ -23,7 +23,7 @@ Router.get('/', [accept(2)], async (req, res) => {
 	}
 });
 
-Router.get('/me', [accept(5)], async (req, res) => {
+Router.get('/me', [accept(0)], async (req, res) => {
 	try {
 		const [user] = await req.mysql._query(
 			`SELECT * FROM auth.user_info WHERE uuid='${req.auth.uuid}';`
@@ -36,7 +36,7 @@ Router.get('/me', [accept(5)], async (req, res) => {
 	}
 });
 
-Router.get('/:id', [accept(2), checkoutIdfromUrl], async (req, res) => {
+Router.get('/:id', [accept(4), checkoutIdfromUrl], async (req, res) => {
 	try {
 		const { id } = req.params;
 		const [user] = await req.mysql._query(
@@ -84,7 +84,7 @@ Router.post(
 	}
 );
 
-Router.delete('/:id', [checkoutIdfromUrl, accept(1)], async (req, res) => {
+Router.delete('/:id', [checkoutIdfromUrl, accept(2)], async (req, res) => {
 	try {
 		const { id } = req.params;
 		const [user] = await req.mysql._query(
@@ -101,7 +101,7 @@ Router.delete('/:id', [checkoutIdfromUrl, accept(1)], async (req, res) => {
 
 Router.patch(
 	'/password',
-	[accept(5), body('password').isLength({ min: 8 }), checkParamsValid],
+	[accept(0), body('password').isLength({ min: 8 }), checkParamsValid],
 	async (req, res) => {
 		const salt = await bcrypt.genSalt(10);
 		const password = await bcrypt.hash(req.body.password, salt);
@@ -116,7 +116,7 @@ Router.patch(
 Router.put(
 	'/',
 	[
-		accept(5),
+		accept(0),
 		body('email').isEmail(),
 		body('name').exists(),
 		checkParamsValid
