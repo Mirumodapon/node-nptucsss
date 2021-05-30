@@ -15,6 +15,7 @@
 		"init:deploy": ""
 	},
 	"dependencies": {
+		"axios": "^0.21.1",
 		"bcryptjs": "^2.4.3",
 		"dotenv": "^9.0.2",
 		"express": "^4.17.1",
